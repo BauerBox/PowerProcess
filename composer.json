@@ -21,6 +21,9 @@
         }
     ],
     "require": {
-        "psr/log": "1.0.0"
+        "psr/log": "1.0.0",
+        "ext-posix": "*",
+        "ext-pcntl": "*",
+        "php": ">=5.3.2"
     }
 }
