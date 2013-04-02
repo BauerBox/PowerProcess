@@ -23,21 +23,21 @@ PowerProcess 3 represents a signifcant change in the structure of the code. So m
 
 Open database connections made in the control process do not carry over to the threads.  This means if you are doing work with a MySQL (or other) database, you will need to open a new database connection in the thread code.
 
-### Quick Start
+## Quick Start
 
-#### Threading
-
-_Coming Soon!_
-
-#### Named-Threads
+### Threading
 
 _Coming Soon!_
 
-#### Shared Memory
+### Named-Threads
 
 _Coming Soon!_
 
-#### Daemons
+### Shared Memory
+
+_Coming Soon!_
+
+### Daemons
 
 _Coming Soon!_	
 
