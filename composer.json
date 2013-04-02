@@ -5,11 +5,19 @@
     "autoload": {
         "psr-0": { "BauerBox\\PowerProcess\\": "lib/PowerProcess" }
     },
+    "version": "3.0.0-alpha1",
+    "type": "library",
+    "keywords": [
+        "thread",
+        "posix",
+        "fork"
+    ],
     "authors": [
         {
             "name": "Don Bauer",
             "email": "lordgnu@me.com",
-            "homepage": "http://www.bauerbox.com"
+            "homepage": "http://www.bauerbox.com",
+            "role": "Developer"
         }
     ],
     "require": {
