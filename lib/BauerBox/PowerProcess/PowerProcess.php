@@ -110,7 +110,8 @@ class PowerProcess implements LoggerAwareInterface
     public function __construct($maxJobs = 10, $maxJobTime = 300)
     {
         // Set Windows Flag
-        $this->isWindows = (false !== stristr(PHP_OS, 'win'));
+        // TODO: Remove Hard Code
+        $this->isWindows = false;
 
         if (true === $this->isWindows) {
             throw new \Exception(
