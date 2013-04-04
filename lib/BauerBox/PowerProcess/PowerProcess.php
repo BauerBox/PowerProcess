@@ -589,6 +589,12 @@ class PowerProcess implements LoggerAwareInterface
 
     protected function checkRunningJobs()
     {
+        // Make sure jobs is an array
+        if (false === is_array($this->jobs)) {
+            return;
+        }
+
+        // Loop through and check the jobs
         foreach ($this->jobs as $jobId => $job) {
             if ($job instanceof Job) {
                 // Check if the job is still running
