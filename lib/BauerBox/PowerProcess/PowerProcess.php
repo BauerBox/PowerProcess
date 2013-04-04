@@ -561,6 +561,10 @@ class PowerProcess implements LoggerAwareInterface
             $this->processId = Identification::getProcessId();
             $this->processName = $job->getJobName();
             $this->logger->setJobName($this->processName);
+
+            // Remove callbacks
+            $this->callbacks = array();
+            $this->signalsRegistered = array();
         }
 
         return true;
