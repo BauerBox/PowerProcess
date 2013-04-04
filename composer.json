@@ -3,7 +3,7 @@
     "description": "Process forking and threading made easy",
     "license": "MIT",
     "autoload": {
-        "psr-0": { "BauerBox": "lib" }
+        "psr-0": { "BauerBox": "lib/" }
     },
     "version": "3.0.0-alpha1",
     "type": "library",
