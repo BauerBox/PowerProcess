@@ -102,10 +102,15 @@ class PowerProcess implements LoggerAwareInterface
 
     /** @var AbstractLogger */
     protected $logger;
-
     protected $exitCode;
-
     protected $jobs;
+
+    /**
+     * Signals the have been registered with the PCNTL dispatcher
+     *
+     * @var array
+     */
+    protected $signalsRegistered;
 
     public function __construct($maxJobs = 10, $maxJobTime = 300)
     {
@@ -277,23 +282,21 @@ class PowerProcess implements LoggerAwareInterface
                     break;
                 }
 
-                $data =& $callStack[$callIndex];
+                $callback =& $callStack[$callIndex][1];
+                $callbackName =& $callStack[$callIndex][2];
 
-                $callback =& $data[1];
-                $callbackName =& $data[2];
-
-                if (is_callable($callback)) {
+                if (true === is_callable($callback)) {
                     $status = call_user_func_array($callback, $arguments);
 
                     switch ($status) {
                         case self::CALLBACK_IGNORE:
                             $this->logger->debug('Callback ' . $callbackName . ' returned IGNORE status');
-                            break;
+                            // IGNORE will fall-through to CONTINUE but write to the log
                         case self::CALLBACK_CONTINUE:
                             break;
                         case self::CALLBACK_REMOVE:
                             $this->logger->debug('Removing callback ' . $callbackName . ' from stack');
-                            unset($callStack[$callIndex]);
+                            $this->removeCallback($signal, $callIndex);
                             break;
                         case self::CALLBACK_STOP_PROPOGATION:
                             $this->logger->debug('Callback ' . $callbackName . ' has requested halting of propogation');
@@ -385,6 +388,30 @@ class PowerProcess implements LoggerAwareInterface
         }
 
         return $this->addCallbackToStack($signal, $callback, $name, $priority);
+    }
+
+    public function removeCallback($signal, $callIndex)
+    {
+        // Check to make sure there are callbacks registered
+        if (false === array_key_exists($signal, $this->callbacks) || false === is_array($this->callbacks[$signal])) {
+            throw new \Exception('Attempted to remove callback, but none registered!');
+        }
+
+        // Check to make sure that this callback is registered
+        if (false === array_key_exists($callIndex, $this->callbacks[$signal])) {
+            throw new \Exception('The requested callback can not be removed because it has already been removed');
+        }
+
+        // It is safe to remove
+        unset($this->callbacks[$signal][$callIndex]);
+
+        // Check if the signal needs to be blocked again
+        if ($signal < 1000 && count($this->callbacks[$signal]) < 1) {
+            $this->logger->debug('Blocking signal ' . Signals::signalName($signal));
+
+            // Block the signal
+            pcntl_sigprocmask(SIG_BLOCK, array($signal));
+        }
     }
 
     public function restart()
@@ -583,8 +610,11 @@ class PowerProcess implements LoggerAwareInterface
 
         // Register signal with our signal dispatcher if it's not a custom signal
         if ($signal < 1000) {
-            $this->logger->debug('Registering signal ' . Signals::signalName($signal) . ' with dispatcher');
-            pcntl_signal($signal, array($this, 'handleSignal'));
+            if (false === array_key_exists($signal, $this->signalsRegistered)) {
+                $this->logger->debug('Registering signal ' . Signals::signalName($signal) . ' with dispatcher');
+                pcntl_signal($signal, array($this, 'handleSignal'));
+                $this->signalsRegistered[$signal] = true;
+            }
 
             // Unblock the signal
             pcntl_sigprocmask(SIG_UNBLOCK, array($signal));
@@ -645,6 +675,9 @@ class PowerProcess implements LoggerAwareInterface
     {
         // Setup callback array
         $this->callbacks = array();
+
+        // Init registered signals array
+        $this->signalsRegistered = array();
 
         // Set the static counter
         static::$callbackCounter = 0;
