@@ -439,11 +439,12 @@ class PowerProcess implements LoggerAwareInterface
         }
 
         $this->logger = $logger;
-        $this->logger->debug('Logger Installed');
 
         if ($logger instanceof AbstractLogger) {
             $this->logger->setJobName($this->processName === null ? 'CONTROL' : $this->processName);
         }
+
+        $this->logger->debug('Logger Installed');
 
         return $this;
     }
