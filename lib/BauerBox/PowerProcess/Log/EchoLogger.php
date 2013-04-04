@@ -86,7 +86,7 @@ class EchoLogger extends AbstractLogger
         // Set Variable Context Items
         $context['LEVEL']       = sprintf('%-10s', strtoupper($level));
         $context['TIMESTAMP']   = $this->getTime();
-        $context['MESSAGE']     = $message;
+        $context['MESSAGE']     = $this->interpolate($message, $context);
 
         echo $this->interpolate($this->messageFormat, $context) . PHP_EOL;
 
