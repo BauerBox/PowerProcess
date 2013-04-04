@@ -548,6 +548,7 @@ class PowerProcess implements LoggerAwareInterface
             throw new ProcessForkException(
                 'Attempt to fork process failed while spawning job: ' . $job->getJobName()
             );
+
             return false;
         }
 
@@ -563,8 +564,7 @@ class PowerProcess implements LoggerAwareInterface
             $this->logger->setJobName($this->processName);
 
             // Remove callbacks
-            $this->callbacks = array();
-            $this->signalsRegistered = array();
+            $this->jobs = array();
         }
 
         return true;
