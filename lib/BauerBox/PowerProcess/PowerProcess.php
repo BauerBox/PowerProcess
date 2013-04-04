@@ -486,9 +486,14 @@ class PowerProcess implements LoggerAwareInterface
             exit((null === $exitCode) ? 0 : $exitCode);
         }
 
+        // Log and handle signals
         $this->logger->info('Shutdown sequence complete');
         $this->handleSignal($this->aliasSignals['SIG_POST_SHUTDOWN']);
+
+        // Reset Flags
         $this->continue = false;
+        $this->ready = true;
+
         return self::CALLBACK_IGNORE;
     }
 
