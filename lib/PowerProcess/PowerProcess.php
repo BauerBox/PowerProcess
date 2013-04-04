@@ -77,6 +77,22 @@ class PowerProcess implements LoggerAwareInterface
 
     protected $ready = false;
 
+    /**
+     * Windows Flag
+     *
+     * @var boolean
+     */
+    protected $isWindows;
+
+    /**
+     * Shared Memory Support Flag
+     *
+     * @var boolean
+     */
+    protected $hasSharedMemorySupport;
+
+    protected $sharedMemorySegmentSize; // INI: sysvshm.init_mem
+
     protected $sessionId;
 
     protected $tickCounter = 100; // uSeconds
@@ -87,24 +103,27 @@ class PowerProcess implements LoggerAwareInterface
     /** @var AbstractLogger */
     protected $logger;
 
-    protected $logDebug;
-    protected $logSocket;
-
     protected $exitCode;
 
     protected $jobs;
 
     public function __construct($maxJobs = 10, $maxJobTime = 300)
     {
-        // Check for pcntl and posix extensions
-        $extensions = get_loaded_extensions();
+        // Set Windows Flag
+        $this->isWindows = (false !== stristr(PHP_OS, 'win'));
 
-        if (false === in_array('posix', $extensions) || false === in_array('pcntl', $extensions)) {
+        if (true === $this->isWindows) {
             throw new \Exception(
-                'PowerProcess requires the posix and pcntl extensions to operate. Please install/enable and try again'
+                'PowerProcess is currently not available on the Windows operating system'
             );
+        } else {
+            // Check for pcntl and posix extensions
+            if (false === extension_loaded('posix') || false === extension_loaded('pcntl')) {
+                throw new \Exception(
+                    'PowerProcess requires the posix and pcntl extensions to operate. Please install/enable and try again'
+                );
+            }
         }
-        unset($extensions);
 
         // Setup a null logger just in case
         $this->setLogger(new NullLogger());
