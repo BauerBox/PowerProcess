@@ -2,7 +2,7 @@
 
 use BauerBox\PowerProcess\Posix\Signals;
 
-include __DIR__ . '/../lib/PowerProcess/Autoloader.php';
+include __DIR__ . '/../lib/BauerBox/PowerProcess/Autoloader.php';
 
 BauerBox_PowerProcess_Autoloader::register();
 

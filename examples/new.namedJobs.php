@@ -5,7 +5,7 @@ use BauerBox\PowerProcess\Job\Job;
 use BauerBox\PowerProcess\Log\EchoLogger;
 
 include __DIR__ . '/../vendor/autoload.php';
-include __DIR__ . '/../lib/PowerProcess/Autoloader.php';
+include __DIR__ . '/../lib/BauerBox/PowerProcess/Autoloader.php';
 
 BauerBox_PowerProcess_Autoloader::register();
 
