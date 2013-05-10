@@ -86,14 +86,10 @@ class Job
         return $this;
     }
 
-    public function terminate()
+    public function terminate($force = false)
     {
-        if (false !== $this->terminateRequested && ($this->getRunningTime() - $this->terminateRequested) > 5) {
+        if (true === $force) {
             return Signals::sendSignal(SIGKILL, $this->getJobProcessId());
-        }
-
-        if (false === $this->terminateRequested) {
-            $this->terminateRequested = $this->getRunningTime();
         }
 
         return Signals::sendSignal(SIGTERM, $this->getJobProcessId());

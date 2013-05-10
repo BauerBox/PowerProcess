@@ -663,7 +663,7 @@ class PowerProcess implements LoggerAwareInterface
                     );
 
                     // Terminate the job
-                    $job->terminate();
+                    $job->terminate(true);
 
                     // Send Custom Signal
                     $this->handleSignal($this->aliasSignals['SIG_JOB_TIME_OVER'], $job);
