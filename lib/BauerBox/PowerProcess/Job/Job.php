@@ -173,6 +173,8 @@ class Job
      */
     public function terminate($force = false)
     {
+        $this->terminateRequested = true;
+
         if (true === $force) {
             return Signals::sendSignal(SIGKILL, $this->getJobProcessId());
         }

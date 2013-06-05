@@ -209,6 +209,17 @@ class PowerProcess implements LoggerAwareInterface
         pcntl_exec($process, $arguments, $environmentVariables);
     }
 
+    public function getNumberOfProcessors()
+    {
+        exec('cat /proc/cpuinfo | grep processor | wc -l', $processors);
+        return $processors;
+    }
+
+    public function getOperatingSystemInformation()
+    {
+        return $this->platform;
+    }
+
     public function getRunningJobCount()
     {
         return count($this->jobs);
@@ -447,6 +458,19 @@ class PowerProcess implements LoggerAwareInterface
     public function runLoop()
     {
         return (true === $this->continue && $this->isParentProcess());
+    }
+
+    public function safeSleep($seconds)
+    {
+        $stop = strtotime('+' . $seconds . ' seconds');
+        $resetTick = $this->tickCounter;
+        $this->tickCounter = 500;
+
+        while (time() < $stop) {
+            $this->tick();
+        }
+
+        $this->tickCounter = $resetTick;
     }
 
     public function sendSignal($signal = SIGUSR1, $processId = null)
