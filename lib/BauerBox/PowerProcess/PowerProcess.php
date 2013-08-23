@@ -552,7 +552,7 @@ class PowerProcess implements LoggerAwareInterface
     {
         // Make sure we are ready to spawn
         if (false === $this->isReadyToSpawn()) {
-            $this->logger->debug("Can spawn new job, already at limit of {$this->maxJobs}");
+            $this->logger->debug("Can't spawn new job, already at limit of {$this->maxJobs}");
             return false;
         }
 
@@ -564,6 +564,11 @@ class PowerProcess implements LoggerAwareInterface
 
         // Init job now so IDs match between Job and Control
         $job = new Job(null, $name);
+
+        // Run Pre-Fork Callback
+        $this->handleSignal($this->aliasSignals['SIG_PRE_FORK']);
+
+        // Fork
         $processId = pcntl_fork();
 
         // Check for error
@@ -581,11 +586,17 @@ class PowerProcess implements LoggerAwareInterface
             $job->setProcessId($processId);
             $this->jobs[$job->getJobName()] = $job;
             $this->logger->debug("Job {$job} spawned successfully");
+
+            // Run POST-FORK Callback
+            $this->handleSignal($this->aliasSignals['SIG_POST_FORK']);
         } else {
             // We are the new Job process
             $this->processId = Identification::getProcessId();
             $this->processName = $job->getJobName();
             $this->logger->setJobName($this->processName);
+
+            // Run POST-FORK Callback
+            $this->handleSignal($this->aliasSignals['SIG_POST_FORK']);
 
             // Remove callbacks
             $this->jobs = array();
