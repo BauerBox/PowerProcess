@@ -457,6 +457,10 @@ class PowerProcess implements LoggerAwareInterface
 
     public function runLoop()
     {
+        // Tick
+        $this->tick();
+
+        // Return
         return (true === $this->continue && $this->isParentProcess());
     }
 
