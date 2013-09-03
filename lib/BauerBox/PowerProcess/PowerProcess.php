@@ -206,6 +206,8 @@ class PowerProcess implements LoggerAwareInterface
 
     public function exec($process, $arguments = null, $environmentVariables = null)
     {
+        $this->logger->info("Running Exec(): {$process}");
+
         if (null === $environmentVariables) {
             pcntl_exec($process, $arguments);
         } else {
