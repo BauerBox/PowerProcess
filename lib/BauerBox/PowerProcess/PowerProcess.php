@@ -206,7 +206,11 @@ class PowerProcess implements LoggerAwareInterface
 
     public function exec($process, $arguments = null, $environmentVariables = null)
     {
-        pcntl_exec($process, $arguments, $environmentVariables);
+        if (null === $environmentVariables) {
+            pcntl_exec($process, $arguments);
+        } else {
+            pcntl_exec($process, $arguments, $environmentVariables);
+        }
     }
 
     public function getNumberOfProcessors()
