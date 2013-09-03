@@ -119,18 +119,13 @@ class Signals
     public static function sendSignal($signal, $processId, &$errorMessage = false)
     {
         if (null === static::$canSignal) {
-            $extentions = get_loaded_extensions();
-            static::$canSignal = (in_array('posix', $extentions) && in_array('pcntl', $extentions));
-            unset($extentions);
+            static::$canSignal = extension_loaded('posix');
         }
 
         if (true === self::$canSignal) {
             if (true === static::isValidSignal($signal)) {
-                // Queue the signal
-                posix_kill($processId, $signal);
-
-                // Dispatch
-                return pcntl_signal_dispatch();
+                // Send the Signal
+                return posix_kill($processId, $signal);
             }
 
             $errorMessage = 'Invalid signal: ' . $signal;
