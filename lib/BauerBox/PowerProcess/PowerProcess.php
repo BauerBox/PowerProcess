@@ -193,8 +193,12 @@ class PowerProcess implements LoggerAwareInterface
 
         if ($this->parentSessionId > 0) {
             $this->logger->debug(
-                'Daemonization successful!',
-                'Parent PID: ' . $this->parentProcessId,
+                'Daemonization successful!'
+            );
+            $this->logger->debug(
+                'Parent PID: ' . $this->parentProcessId
+            );
+            $this->logger->debug(
                 'Parent SID: ' . $this->parentSessionId
             );
 
