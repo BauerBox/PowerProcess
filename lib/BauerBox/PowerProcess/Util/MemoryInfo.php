@@ -55,7 +55,6 @@ class MemoryInfo
 
         $limit = ini_get('memory_limit');
         if (0 < preg_match('@^(?P<mem>[0-9]+)(?P<unit>[K|M|G|T])$@i', $limit, $match)) {
-            var_dump($match);
             if (false === array_key_exists('unit', $match)) {
                 $this->phpMemoryLimit = (int) $match['mem'];
             } else {
