@@ -14,10 +14,10 @@ BauerBox_PowerProcess_Autoloader::register();
 $info = new \BauerBox\PowerProcess\Util\SystemInfo();
 
 echo
-    "OS:      " . $info->getOs() . PHP_EOL .
-    "Release: " . $info->getOsRelease() . PHP_EOL .
-    "Version: " . $info->getOsVersion() . PHP_EOL .
-    "OS Arch: " . $info->getOsArch() . PHP_EOL . PHP_EOL;
+    "OS:            " . $info->getOs() . PHP_EOL .
+    "Release:       " . $info->getOsRelease() . PHP_EOL .
+    "Version:       " . $info->getOsVersion() . PHP_EOL .
+    "OS Arch:       " . $info->getOsArch() . PHP_EOL . PHP_EOL;
 
 $cpu = $info->getCpuInfo();
 echo
