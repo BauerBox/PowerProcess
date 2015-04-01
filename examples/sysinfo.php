@@ -36,5 +36,16 @@ echo
 ;
 
 echo
-    "PHP Memory Limit: " . ini_get('memory_limit') . PHP_EOL;
+    "PHP  Limit:    " . ini_get('memory_limit') . PHP_EOL .
+    "  (Bytes):     " . $mem->getPhpMemoryLimit() . PHP_EOL .
+    "  (KB):        " . $mem->getPhpMemoryLimit(\BauerBox\PowerProcess\Util\MemoryInfo::KB) . PHP_EOL .
+    "  (MB):        " . $mem->getPhpMemoryLimit(\BauerBox\PowerProcess\Util\MemoryInfo::MB) . PHP_EOL .
+    "  (GB):        " . $mem->getPhpMemoryLimit(\BauerBox\PowerProcess\Util\MemoryInfo::GB) . PHP_EOL .
+    "  (TB):        " . $mem->getPhpMemoryLimit(\BauerBox\PowerProcess\Util\MemoryInfo::TB) . PHP_EOL . PHP_EOL;
+
+;
+
+$maxThreads = round(($mem->getMemory() / $mem->getPhpMemoryLimit()), 0, PHP_ROUND_HALF_DOWN);
+echo "Max mThreads: " . $maxThreads . PHP_EOL;
+echo "Max cThreads: " . $cpu->logicalCores . PHP_EOL . PHP_EOL;
 

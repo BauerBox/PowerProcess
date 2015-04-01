@@ -189,7 +189,15 @@ class PowerProcess implements LoggerAwareInterface
         $this->sysInfo = new SystemInfo();
 
         if (null === $maxJobs) {
-            $this->maxJobs = $this->sysInfo->getCpuInfo()->logicalCores;
+            $mMax = round(
+                ($this->sysInfo->getMemoryInfo()->getMemory() / $this->sysInfo->getMemoryInfo()->getPhpMemoryLimit()),
+                0,
+                PHP_ROUND_HALF_DOWN
+            );
+
+            $cMax = $this->sysInfo->getCpuInfo()->logicalCores;
+
+            $this->maxJobs = ($cMax < $mMax) ? $cMax : $mMax;
         }
 
         if (true === $this->isWindows) {
@@ -826,10 +834,10 @@ class PowerProcess implements LoggerAwareInterface
 
     /**
      *
-     * @param type $signal
+     * @param int|string $signal
      * @param \BauerBox\PowerProcess\callable $callback
      * @param string $name
-     * @param type $priority
+     * @param integer $priority
      * @return \BauerBox\PowerProcess\PowerProcess
      */
     protected function addCallbackToStack($signal, callable $callback, $name = null, $priority = 0)
