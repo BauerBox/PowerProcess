@@ -17,6 +17,7 @@ use BauerBox\PowerProcess\Log\AbstractLogger;
 use BauerBox\PowerProcess\Log\NullLogger;
 use BauerBox\PowerProcess\Posix\Identification;
 use BauerBox\PowerProcess\Posix\Signals;
+use BauerBox\PowerProcess\Util\SystemInfo;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
@@ -48,12 +49,21 @@ class PowerProcess implements LoggerAwareInterface
     const CALLBACK_STOP_PROPOGATION =   16; // Prevent remaining callbacks from being executed
 
     // Public debug logging constant
+    /**
+     * @var bool
+     */
     public static $debugLogging     =   false;
 
     // Callback spawn counter for unique ID generation
+    /**
+     * @var
+     */
     protected static $callbackCounter;
 
-    protected $aliasSignals = array(
+    /**
+     * @var array
+     */
+    protected $aliasSignals = [
         'SIG_PRE_FORK'          =>  1001,
         'SIG_POST_FORK'         =>  1002,
         'SIG_PRE_DAEMONIZE'     =>  1003,
@@ -64,17 +74,41 @@ class PowerProcess implements LoggerAwareInterface
         'SIG_POST_SHUTDOWN'     =>  1008,
         'SIG_PRE_RESTART'       =>  1009,
         'SIG_POST_RESTART'      =>  1010
-    );
+    ];
 
+    /**
+     * @var array
+     */
     protected $callbacks;
+
+    /**
+     * @var bool
+     */
     protected $continue;
 
+    /**
+     * @var int
+     */
     protected $parentProcessId;
+
+    /**
+     * @var int
+     */
     protected $parentSessionId;
 
+    /**
+     * @var int
+     */
     protected $processId;
+
+    /**
+     * @var string|null
+     */
     protected $processName; // User-Set Process Name (Or Auto Generated)
 
+    /**
+     * @var bool
+     */
     protected $ready = false;
 
     /**
@@ -91,18 +125,42 @@ class PowerProcess implements LoggerAwareInterface
      */
     protected $hasSharedMemorySupport;
 
+    /**
+     * @var mixed
+     */
     protected $sharedMemorySegmentSize; // INI: sysvshm.init_mem
 
+    /**
+     * @var mixed
+     */
     protected $sessionId;
 
+    /**
+     * @var int
+     */
     protected $tickCounter = 100; // uSeconds
 
+    /**
+     * @var int
+     */
     protected $maxJobs;
+
+    /**
+     * @var int
+     */
     protected $maxJobTime;
 
     /** @var AbstractLogger */
     protected $logger;
+
+    /**
+     * @var int
+     */
     protected $exitCode;
+
+    /**
+     * @var array
+     */
     protected $jobs;
 
     /**
@@ -112,11 +170,27 @@ class PowerProcess implements LoggerAwareInterface
      */
     protected $signalsRegistered;
 
-    public function __construct($maxJobs = 10, $maxJobTime = 300)
+    /**
+     * @var SystemInfo
+     */
+    protected $sysInfo;
+
+    /**
+     * @param null $maxJobs
+     * @param int $maxJobTime
+     * @throws \Exception
+     */
+    public function __construct($maxJobs = null, $maxJobTime = 300)
     {
         // Set Windows Flag
         // TODO: Remove Hard Code
         $this->isWindows = false;
+
+        $this->sysInfo = new SystemInfo();
+
+        if (null === $maxJobs) {
+            $this->maxJobs = $this->sysInfo->getCpuInfo()->logicalCores;
+        }
 
         if (true === $this->isWindows) {
             throw new \Exception(
@@ -129,6 +203,12 @@ class PowerProcess implements LoggerAwareInterface
                     'PowerProcess requires the posix and pcntl extensions to operate. Please install/enable and try again'
                 );
             }
+        }
+
+        // Check for OS X
+        if ($this->sysInfo->getOs() == 'Darwin') {
+            // Disable GC
+            gc_disable();
         }
 
         // Setup a null logger just in case
@@ -147,6 +227,9 @@ class PowerProcess implements LoggerAwareInterface
         $this->ready = true;
     }
 
+    /**
+     *
+     */
     public function __destruct()
     {
         // Process any remaining signals
@@ -160,6 +243,9 @@ class PowerProcess implements LoggerAwareInterface
         $this->removeLogger();
     }
 
+    /**
+     * @return int
+     */
     public function complete()
     {
         // Check if a callback or anything else has overridden the exit code
@@ -172,6 +258,10 @@ class PowerProcess implements LoggerAwareInterface
         exit((null === $this->exitCode) ? 0 : $this->exitCode);
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function daemonize()
     {
         if (false === $this->ready) {
@@ -208,6 +298,11 @@ class PowerProcess implements LoggerAwareInterface
         throw new \Exception('There was an error when attempting to daemonize');
     }
 
+    /**
+     * @param $process
+     * @param null $arguments
+     * @param null $environmentVariables
+     */
     public function exec($process, $arguments = null, $environmentVariables = null)
     {
         $this->logger->info("Running Exec(): {$process}");
@@ -219,22 +314,34 @@ class PowerProcess implements LoggerAwareInterface
         }
     }
 
+    /**
+     * @return mixed
+     */
     public function getNumberOfProcessors()
     {
         exec('cat /proc/cpuinfo | grep processor | wc -l', $processors);
         return $processors;
     }
 
+    /**
+     * @return mixed
+     */
     public function getOperatingSystemInformation()
     {
-        return $this->platform;
+        return $this->sysInfo->getOsVersion();
     }
 
+    /**
+     * @return int
+     */
     public function getRunningJobCount()
     {
         return count($this->jobs);
     }
 
+    /**
+     * @return mixed
+     */
     public function getRunningJobs()
     {
         $this->tick();
@@ -242,6 +349,10 @@ class PowerProcess implements LoggerAwareInterface
         return $this->jobs;
     }
 
+    /**
+     * @param $jobName
+     * @return bool
+     */
     public function getJobStatus($jobName)
     {
         $this->tick();
@@ -263,6 +374,10 @@ class PowerProcess implements LoggerAwareInterface
         return $this->logger;
     }
 
+    /**
+     * @param $signal
+     * @throws \Exception
+     */
     public function handleSignal($signal)
     {
         // Get signal name
@@ -349,32 +464,52 @@ class PowerProcess implements LoggerAwareInterface
         }
     }
 
+    /**
+     * @return bool
+     */
     public function isDaemon()
     {
         return $this->parentSessionId !== false;
     }
 
+    /**
+     * @return bool
+     */
     public function isJobProcess()
     {
         return $this->parentProcessId !== $this->processId;
     }
 
+    /**
+     * @return bool
+     */
     public function isParentProcess()
     {
         return $this->parentProcessId === $this->processId;
     }
 
+    /**
+     * @param $processId
+     * @param null $status
+     * @return bool
+     */
     public function isProcessRunning($processId, &$status = null)
     {
         return (0 === pcntl_waitpid($processId, $status, WUNTRACED | WNOHANG));
     }
 
+    /**
+     * @return bool
+     */
     public function isReadyToSpawn()
     {
         $this->tick();
         return ($this->getRunningJobCount() < $this->maxJobs);
     }
 
+    /**
+     *
+     */
     public function log()
     {
         if (false === $this->logger instanceof AbstractLogger) {
@@ -382,12 +517,19 @@ class PowerProcess implements LoggerAwareInterface
         }
 
         for ($i = 0; $i < func_num_args(); ++$i) {
-            $this->logger
-                ->info(func_get_arg($i))
-                ->warning('Depricated call to PowerProcess::log() -- User PowerProcess::getLogger() instead');
+            $this->logger->info(func_get_arg($i));
+            $this->logger->warning('Depricated call to PowerProcess::log() -- User PowerProcess::getLogger() instead');
         }
     }
 
+    /**
+     * @param $signal
+     * @param callable $callback
+     * @param null $name
+     * @param int $priority
+     * @return PowerProcess
+     * @throws \Exception
+     */
     public function registerCallback($signal, callable $callback, $name = null, $priority = 0)
     {
         if (true === $this->ready) {
@@ -411,6 +553,11 @@ class PowerProcess implements LoggerAwareInterface
         return $this->addCallbackToStack($signal, $callback, $name, $priority);
     }
 
+    /**
+     * @param $signal
+     * @param $callIndex
+     * @throws \Exception
+     */
     public function removeCallback($signal, $callIndex)
     {
         // Check to make sure there are callbacks registered
@@ -435,6 +582,9 @@ class PowerProcess implements LoggerAwareInterface
         }
     }
 
+    /**
+     * @return int
+     */
     public function restart()
     {
         $this->logger->debug('Initializing restart sequence');
@@ -465,6 +615,9 @@ class PowerProcess implements LoggerAwareInterface
         exit(0);
     }
 
+    /**
+     * @return bool
+     */
     public function runLoop()
     {
         // Tick
@@ -474,6 +627,9 @@ class PowerProcess implements LoggerAwareInterface
         return (true === $this->continue && $this->isParentProcess());
     }
 
+    /**
+     * @param $seconds
+     */
     public function safeSleep($seconds)
     {
         $stop = strtotime('+' . $seconds . ' seconds');
@@ -487,6 +643,11 @@ class PowerProcess implements LoggerAwareInterface
         $this->tickCounter = $resetTick;
     }
 
+    /**
+     * @param int $signal
+     * @param null $processId
+     * @return bool
+     */
     public function sendSignal($signal = SIGUSR1, $processId = null)
     {
         if ($signal > 1000) {
@@ -496,6 +657,10 @@ class PowerProcess implements LoggerAwareInterface
         return Signals::sendSignal($signal, $processId);
     }
 
+    /**
+     * @param LoggerInterface $logger
+     * @return $this
+     */
     public function setLogger(LoggerInterface $logger)
     {
         if ($this->logger instanceof LoggerInterface) {
@@ -514,6 +679,10 @@ class PowerProcess implements LoggerAwareInterface
         return $this;
     }
 
+    /**
+     * @param int $maxJobs
+     * @return $this
+     */
     public function setMaxJobs($maxJobs = 10)
     {
         $this->logger->debug('Setting max jobs to: ' . $maxJobs);
@@ -521,6 +690,10 @@ class PowerProcess implements LoggerAwareInterface
         return $this;
     }
 
+    /**
+     * @param int $maxJobTime
+     * @return $this
+     */
     public function setMaxJobTime($maxJobTime = 300)
     {
         $this->logger->debug('Setting max job time to: ' . $maxJobTime);
@@ -528,6 +701,10 @@ class PowerProcess implements LoggerAwareInterface
         return $this;
     }
 
+    /**
+     * @param null $exitCode
+     * @return int
+     */
     public function shutdown($exitCode = null)
     {
         if ($this->isParentProcess()) {
@@ -562,6 +739,12 @@ class PowerProcess implements LoggerAwareInterface
         return self::CALLBACK_IGNORE;
     }
 
+    /**
+     * @param null $name
+     * @param null $processId
+     * @return bool
+     * @throws \Exception
+     */
     public function spawnJob($name = null, &$processId = null)
     {
         // Make sure we are ready to spawn
@@ -619,6 +802,10 @@ class PowerProcess implements LoggerAwareInterface
         return true;
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function start()
     {
         if (true === $this->ready) {
@@ -629,6 +816,9 @@ class PowerProcess implements LoggerAwareInterface
         throw new \Exception('An error has occurred which prevents PowerProcess from starting');
     }
 
+    /**
+     * @return mixed
+     */
     public function whoAmI()
     {
         return $this->processName;
@@ -676,6 +866,9 @@ class PowerProcess implements LoggerAwareInterface
         return $this;
     }
 
+    /**
+     * @throws \Exception
+     */
     protected function checkRunningJobs()
     {
         // Make sure jobs is an array
@@ -724,6 +917,9 @@ class PowerProcess implements LoggerAwareInterface
         }
     }
 
+    /**
+     *
+     */
     protected function installSignalHandler()
     {
         // Setup callback array
@@ -749,6 +945,9 @@ class PowerProcess implements LoggerAwareInterface
 
     }
 
+    /**
+     *
+     */
     public function removeLogger()
     {
         if ($this->isParentProcess()) {
@@ -758,6 +957,9 @@ class PowerProcess implements LoggerAwareInterface
         $this->logger = null;
     }
 
+    /**
+     * @throws \Exception
+     */
     protected function startup()
     {
         // Double check for flags
@@ -772,7 +974,7 @@ class PowerProcess implements LoggerAwareInterface
         $this->processName = 'CONTROL';
 
         // Initialize Job Queue
-        $this->jobs = array();
+        $this->jobs = [];
 
         // Check for logger
         if (false === $this->logger instanceof AbstractLogger) {
@@ -784,6 +986,11 @@ class PowerProcess implements LoggerAwareInterface
         $this->continue = true;
     }
 
+    /**
+     * @param $processId
+     * @param bool $forceful
+     * @return bool
+     */
     protected function terminateProcess($processId, $forceful = false)
     {
         if (true === $forceful) {
@@ -793,6 +1000,9 @@ class PowerProcess implements LoggerAwareInterface
         return $this->sendSignal(SIGTERM, $processId);
     }
 
+    /**
+     *
+     */
     protected function tick()
     {
         // Dispatch Pending Signals
