@@ -68,7 +68,7 @@ class MemoryInfo
                 } else {
                     $mem = (int) $match['mem'];
 
-                    switch (strtolower($match['mem'])) {
+                    switch (strtolower($match['unit'])) {
                         case 'tb':
                             $mem *= 1024;
                         case 'gb':
