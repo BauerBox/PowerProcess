@@ -321,6 +321,9 @@ NUMA node0 CPU(s):     0,1*/
 
     }
 
+    /**
+     * Load Platform (OS) info
+     */
     protected function sniffPlatform()
     {
         // Set the basic platform information
@@ -333,36 +336,71 @@ NUMA node0 CPU(s):     0,1*/
         );
     }
 
+    /**
+     * Get the OS (Linux, Darwin, etc...)
+     *
+     * @return string
+     */
     public function getOs()
     {
         return $this->platform[static::INFO_OS];
     }
 
+    /**
+     * Get the Hostname
+     *
+     * @return string
+     */
     public function getHostname()
     {
         return $this->platform[static::INFO_HOSTNAME];
     }
 
+    /**
+     * Get the OS Release (Version number usually)
+     *
+     * @return string
+     */
     public function getOsRelease()
     {
         return $this->platform[static::INFO_OS_RELEASE];
     }
 
+    /**
+     * Get the OS Architecture
+     *
+     * @return string
+     */
     public function getOsArch()
     {
         return $this->platform[static::INFO_OS_ARCH];
     }
 
+    /**
+     * Get the OS Version String
+     *
+     * @return string
+     */
     public function getOsVersion()
     {
         return $this->platform[static::INFO_OS_VERSION];
     }
 
+    /**
+     * Get the CPU Info
+     *
+     * @return CpuInfo
+     */
     public function getCpuInfo()
     {
         return $this->cpu;
     }
 
+    /**
+     * Get the Memory Info
+     *
+     * @return MemoryInfo
+     */
     public function getMemoryInfo()
     {
         return $this->mem;

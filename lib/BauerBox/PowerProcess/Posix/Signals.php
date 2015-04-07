@@ -15,13 +15,29 @@ namespace BauerBox\PowerProcess\Posix;
  * Utility class for friendly POSIX signal names
  *
  * @author Don Bauer <lordgnu@me.com>
+ * @package BauerBox\PowerProcess\Posix
  */
 class Signals
 {
+    /**
+     * @var array
+     */
     private static $alias;
+
+    /**
+     * @var bool
+     */
     private static $canSignal;
-    private static $contantsInstalled = false;
-    private static $signalArray = array(
+
+    /**
+     * @var bool
+     */
+    private static $constantsInstalled = false;
+
+    /**
+     * @var array
+     */
+    private static $signalArray = [
         'SIGHUP'    =>  1,
         'SIGINT'    =>  2,
         'SIGQUIT'   =>  3,
@@ -57,21 +73,29 @@ class Signals
         'SIGPWR'    =>  30,
         'SIGSYS'    =>  31,
         'SIGBABY'   =>  31
-    );
+    ];
 
+    /**
+     * Installs missing constants (since pre-defined constants differ from OS to OS)
+     */
     public static function installConstants()
     {
-        if (false === static::$contantsInstalled) {
+        if (false === static::$constantsInstalled) {
             foreach (static::$signalArray as $signalName => $signalValue) {
                 if (false === defined($signalName)) {
                     define($signalName, $signalValue);
                 }
             }
 
-            static::$contantsInstalled = true;
+            static::$constantsInstalled = true;
         }
     }
 
+    /**
+     * @param $signal
+     *
+     * @return bool
+     */
     public static function isValidSignal($signal)
     {
         static::installConstants();
@@ -116,6 +140,13 @@ class Signals
         return (is_array(static::$alias) && array_key_exists($signal, static::$alias));
     }
 
+    /**
+     * @param $signal
+     * @param $processId
+     * @param bool $errorMessage
+     *
+     * @return bool
+     */
     public static function sendSignal($signal, $processId, &$errorMessage = false)
     {
         if (null === static::$canSignal) {
@@ -147,7 +178,7 @@ class Signals
     public static function setSignalAlias($signal, $alias)
     {
         if (static::$alias === null) {
-            static::$alias = array();
+            static::$alias = [];
         }
 
         if (null === $alias) {
@@ -248,6 +279,11 @@ class Signals
         }
     }
 
+    /**
+     * @param $signalName
+     *
+     * @return int
+     */
     public static function signalNumber($signalName)
     {
         static::installConstants();

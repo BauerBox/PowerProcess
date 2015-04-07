@@ -72,6 +72,9 @@ class CpuInfo
         }
     }
 
+    /**
+     * Load and Parse information on Linux systems
+     */
     protected function loadLinuxInfo()
     {
         // Try cpuinfo

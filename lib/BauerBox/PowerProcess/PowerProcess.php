@@ -30,7 +30,6 @@ use Psr\Log\LoggerInterface;
  *
  * @author Don Bauer <lordgnu@me.com>
  */
-
 class PowerProcess implements LoggerAwareInterface
 {
     const VERSION         = '3.0.0-alpha1';
@@ -48,15 +47,17 @@ class PowerProcess implements LoggerAwareInterface
     const CALLBACK_REMOVE           =   8;  // Remove this callback from the stack (1-shot)
     const CALLBACK_STOP_PROPOGATION =   16; // Prevent remaining callbacks from being executed
 
-    // Public debug logging constant
     /**
+     * Public debug logging constant
+     *
      * @var bool
      */
     public static $debugLogging     =   false;
 
-    // Callback spawn counter for unique ID generation
     /**
-     * @var
+     * Callback spawn counter for unique ID generation
+     *
+     * @var int
      */
     protected static $callbackCounter;
 
@@ -79,101 +80,109 @@ class PowerProcess implements LoggerAwareInterface
     /**
      * @var array
      */
-    protected $callbacks;
+    private $callbacks;
 
     /**
      * @var bool
      */
-    protected $continue;
+    private $continue;
 
     /**
      * @var int
      */
-    protected $parentProcessId;
+    private $parentProcessId;
 
     /**
      * @var int
      */
-    protected $parentSessionId;
+    private $parentSessionId;
 
     /**
      * @var int
      */
-    protected $processId;
+    private $processId;
 
     /**
+     * User-Set Process Name (Or Auto Generated)
+     *
      * @var string|null
      */
-    protected $processName; // User-Set Process Name (Or Auto Generated)
+    private $processName;
 
     /**
      * @var bool
      */
-    protected $ready = false;
+    private $ready = false;
 
     /**
      * Windows Flag
      *
      * @var boolean
      */
-    protected $isWindows;
+    private $isWindows;
 
     /**
      * Shared Memory Support Flag
      *
      * @var boolean
      */
-    protected $hasSharedMemorySupport;
+    private $hasSharedMemorySupport;
+
+    /**
+     * INI: sysvshm.init_mem
+     *
+     * @var mixed
+     */
+    private $sharedMemorySegmentSize;
 
     /**
      * @var mixed
      */
-    protected $sharedMemorySegmentSize; // INI: sysvshm.init_mem
+    private $sessionId;
 
     /**
-     * @var mixed
+     * Number of uSeconds to wait between ticks
+     *
+     * @var int
      */
-    protected $sessionId;
+    private $tickCounter = 100;
 
     /**
      * @var int
      */
-    protected $tickCounter = 100; // uSeconds
+    private $maxJobs;
 
     /**
      * @var int
      */
-    protected $maxJobs;
+    private $maxJobTime;
+
+    /**
+     * @var AbstractLogger
+     */
+    private $logger;
 
     /**
      * @var int
      */
-    protected $maxJobTime;
-
-    /** @var AbstractLogger */
-    protected $logger;
-
-    /**
-     * @var int
-     */
-    protected $exitCode;
+    private $exitCode;
 
     /**
      * @var array
      */
-    protected $jobs;
+    private $jobs;
 
     /**
      * Signals the have been registered with the PCNTL dispatcher
      *
      * @var array
      */
-    protected $signalsRegistered;
+    private $signalsRegistered;
 
     /**
      * @var SystemInfo
      */
-    protected $sysInfo;
+    private $sysInfo;
 
     /**
      * @param null $maxJobs
@@ -186,8 +195,10 @@ class PowerProcess implements LoggerAwareInterface
         // TODO: Remove Hard Code
         $this->isWindows = false;
 
+        // Get the System Info
         $this->sysInfo = new SystemInfo();
 
+        // If maxJobs wasn't passed, determine the correct count based on system settings
         if (null === $maxJobs) {
             $mMax = round(
                 ($this->sysInfo->getMemoryInfo()->getMemory() / $this->sysInfo->getMemoryInfo()->getPhpMemoryLimit()),
@@ -196,7 +207,6 @@ class PowerProcess implements LoggerAwareInterface
             );
 
             $cMax = $this->sysInfo->getCpuInfo()->logicalCores;
-
             $this->maxJobs = ($cMax < $mMax) ? $cMax : $mMax;
         }
 
@@ -208,14 +218,14 @@ class PowerProcess implements LoggerAwareInterface
             // Check for pcntl and posix extensions
             if (false === extension_loaded('posix') || false === extension_loaded('pcntl')) {
                 throw new \Exception(
-                    'PowerProcess requires the posix and pcntl extensions to operate. Please install/enable and try again'
+                    'PowerProcess requires the posix and pcntl extensions to operate'
                 );
             }
         }
 
         // Check for OS X
         if ($this->sysInfo->getOs() == 'Darwin') {
-            // Disable GC
+            // Disable GC (Helps prevent memory heap corruption errors)
             gc_disable();
         }
 
@@ -247,7 +257,7 @@ class PowerProcess implements LoggerAwareInterface
         unset($this->jobs);
         unset($this->callbacks);
 
-        // Dettach the logger
+        // Detach the logger
         $this->removeLogger();
     }
 
@@ -327,8 +337,7 @@ class PowerProcess implements LoggerAwareInterface
      */
     public function getNumberOfProcessors()
     {
-        exec('cat /proc/cpuinfo | grep processor | wc -l', $processors);
-        return $processors;
+        return $this->sysInfo->getCpuInfo()->logicalCores;
     }
 
     /**
@@ -391,8 +400,8 @@ class PowerProcess implements LoggerAwareInterface
         // Get signal name
         $signalName = Signals::signalName($signal);
 
-        // Debug Loggins
-        $this->logger->debug("Recieved signal {$signalName} ($signal)");
+        // Debug Logging
+        $this->logger->debug("Received signal {$signalName} ($signal)");
 
         // Check the stack for callbacks installed for this signal
         if (true === array_key_exists($signal, $this->callbacks) &&
@@ -420,6 +429,7 @@ class PowerProcess implements LoggerAwareInterface
             // Set Propogation Flag
             $propogate = self::CALLBACK_CONTINUE;
 
+            // TODO: Actually use $priority and prioritize
             foreach ($priorityStack as $callIndex => $priority) {
                 if (self::CALLBACK_CONTINUE !== $propogate) {
                     $this->logger->debug('Propogation has been stopped for remaining callbacks for ' . $signalName);
@@ -526,7 +536,7 @@ class PowerProcess implements LoggerAwareInterface
 
         for ($i = 0; $i < func_num_args(); ++$i) {
             $this->logger->info(func_get_arg($i));
-            $this->logger->warning('Depricated call to PowerProcess::log() -- User PowerProcess::getLogger() instead');
+            $this->logger->warning('Deprecated call to PowerProcess::log() -- User PowerProcess::getLogger() instead');
         }
     }
 
@@ -782,8 +792,6 @@ class PowerProcess implements LoggerAwareInterface
             throw new ProcessForkException(
                 'Attempt to fork process failed while spawning job: ' . $job->getJobName()
             );
-
-            return false;
         }
 
         if ($processId > 0) {
@@ -835,7 +843,7 @@ class PowerProcess implements LoggerAwareInterface
     /**
      *
      * @param int|string $signal
-     * @param \BauerBox\PowerProcess\callable $callback
+     * @param callable $callback
      * @param string $name
      * @param integer $priority
      * @return \BauerBox\PowerProcess\PowerProcess

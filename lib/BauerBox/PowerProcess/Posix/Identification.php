@@ -14,41 +14,74 @@ namespace BauerBox\PowerProcess\Posix;
 /**
  * A small utility class for getting various process-related identifiers
  *
- * @author Don Bauer <lordgnu@me.com>
+ * @package BauerBox\PowerProcess\Posix
  */
 class Identification
 {
+    /**
+     * Get the PID
+     *
+     * @return int
+     */
     public static function getProcessId()
     {
         return posix_getpid();
     }
 
+    /**
+     * Get Parent PID
+     *
+     * @return int
+     */
     public static function getParentProcessId()
     {
         return posix_getppid();
     }
 
+    /**
+     * Get SID
+     *
+     * @return int
+     */
     public static function getSessionId()
     {
         return posix_getsid(0);
     }
 
+    /**
+     * Get SID for specific PID
+     *
+     * @param $processId
+     *
+     * @return int
+     */
     public static function getSessionIdForProcessId($processId)
     {
         return posix_getsid($processId);
     }
 
+    /**
+     * Get GID
+     *
+     * @return int
+     */
     public static function getGroupId()
     {
         return posix_getgid();
     }
 
+    /**
+     * Get Effective GID
+     *
+     * @return int
+     */
     public static function getEffectiveGroupId()
     {
         return posix_getegid();
     }
 
     /**
+     * Get UID
      *
      * @return integer
      */
@@ -58,6 +91,7 @@ class Identification
     }
 
     /**
+     * Get Effective UID
      *
      * @return integer
      */
