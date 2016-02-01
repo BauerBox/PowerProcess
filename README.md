@@ -17,7 +17,7 @@ It is for managing and running forked process for parrallel computing with PHP
 
 ### PowerProcess 3.x
 
-PowerProcess 3 represents a signifcant change in the structure of the code. So much in fact that there is no way to make it compatible with PowerProcess 2.x.  PowerProcess 2.x will continue to be hosted on GitHub at `https://github.com/lordgnu/PowerProcess.git` while PowerProcess 3.x and later will be hosted on GitHub at `https://github.com/BauerBox/PowerProcess.git`
+PowerProcess 3 represents a significant change in the structure of the code. So much in fact that there is no way to make it compatible with PowerProcess 2.x.  PowerProcess 2.x will continue to be hosted on GitHub at `https://github.com/lordgnu/PowerProcess.git` while PowerProcess 3.x and later will be hosted on GitHub at `https://github.com/BauerBox/PowerProcess.git`
 
 ### Database Connections
 
