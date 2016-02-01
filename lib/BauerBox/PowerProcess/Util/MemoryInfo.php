@@ -10,10 +10,12 @@ namespace BauerBox\PowerProcess\Util;
 
 /**
  * Class MemoryInfo
+ *
  * @package BauerBox\PowerProcess\Util
  */
 class MemoryInfo
 {
+    /* Enum Constants */
     const BYTES = 0;
     const KB = 1;
     const MB = 2;
@@ -63,10 +65,13 @@ class MemoryInfo
                 switch (strtolower($match['unit'])) {
                     case 't':
                         $mem *= 1024;
+                        // Fall through
                     case 'g':
                         $mem *= 1024;
+                        // Fall through
                     case 'm':
                         $mem *= 1024;
+                        // Fall through
                     case 'k':
                         $mem *= 1024;
                 }
@@ -101,10 +106,13 @@ class MemoryInfo
                     switch (strtolower($match['unit'])) {
                         case 'tb':
                             $mem *= 1024;
+                            // Fall through
                         case 'gb':
                             $mem *= 1024;
+                            // Fall through
                         case 'mb':
                             $mem *= 1024;
+                            // Fall through
                         case 'kb':
                             $mem *= 1024;
                             break;

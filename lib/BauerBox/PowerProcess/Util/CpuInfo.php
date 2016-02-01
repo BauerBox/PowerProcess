@@ -8,7 +8,11 @@
 
 namespace BauerBox\PowerProcess\Util;
 
-
+/**
+ * Class CpuInfo
+ *
+ * @package BauerBox\PowerProcess\Util
+ */
 class CpuInfo
 {
     /**
@@ -126,7 +130,7 @@ class CpuInfo
             $this->cores = 0;
 
             $this->logicalCores = 0;
-            foreach ($cpus as $id => $cpu) {
+            foreach ($cpus as $cpu) {
                 $this->cores += count($cpu['cores']);
                 $this->logicalCores += $cpu['logical'];
             }
