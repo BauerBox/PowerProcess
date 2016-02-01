@@ -1,0 +1,10 @@
+Research the following extensions:
+    * shmop
+    * sysvmsg
+    * sysvsem
+    * sysvshm
+
+Possibly implement react loop
+Implement Symfony Process component?
+Implement actual lightweight event dispatcher rather than rolling our own
+React promise model for asynchronous handling? (Would require moving to a react loop)
