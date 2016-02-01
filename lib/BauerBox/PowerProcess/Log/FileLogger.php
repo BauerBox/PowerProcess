@@ -1,36 +1,39 @@
 <?php
 
-/*
- * This file is part of the RevMatic package.
- *
- * (c) RevCo <http://www.gorevco.com>
- *
- * Unless otherwise specified, this source is proprietary
- * property of RevCo and is not to be redistributed in any
- * form without the expressed written permission of RevCo
- */
-
 namespace BauerBox\PowerProcess\Log;
 
-use BauerBox\PowerProcess\Log\AbstractLogger;
-
 /**
- * Description of FileLogger
- *
- * @author Don Bauer <don.bauer@gorevco.com>
+ * Class FileLogger
+ * @package BauerBox\PowerProcess\Log
  */
 class FileLogger extends AbstractLogger
 {
-    protected $timestampFormat;
+    /**
+     * @var string
+     */
     protected $messageFormat;
-    protected $autoNewline;
 
-    protected $compiledFormat;
+    /**
+     * @var array
+     */
     protected $context;
+
+    /**
+     * @var bool
+     */
     protected $relativeTime;
 
-    protected $logFile;
+    /**
+     * @var null
+     */
+    private $logFile;
 
+    /**
+     * FileLogger constructor.
+     * @param null $messageFormat
+     * @param bool $relativeTime
+     * @param null $file
+     */
     public function __construct($messageFormat = null, $relativeTime = false, $file = null)
     {
         $this->logFile = $file;
@@ -44,6 +47,10 @@ class FileLogger extends AbstractLogger
         }
     }
 
+    /**
+     * @param $logFile
+     * @throws \Exception
+     */
     public function setLogFile($logFile)
     {
         $this->logFile = $logFile;
@@ -61,6 +68,11 @@ class FileLogger extends AbstractLogger
         }
     }
 
+    /**
+     * @param $jobName
+     *
+     * @return $this
+     */
     public function setJobName($jobName)
     {
         $this->setContextItem(
@@ -70,18 +82,33 @@ class FileLogger extends AbstractLogger
         return $this;
     }
 
+    /**
+     * @param $item
+     * @param $value
+     *
+     * @return $this
+     */
     public function setContextItem($item, $value)
     {
         $this->context[$item] = $value;
         return $this;
     }
 
+    /**
+     * @param $messageFormat
+     *
+     * @return $this
+     */
     public function setMessageFormat($messageFormat)
     {
         $this->messageFormat = $messageFormat;
         return $this;
     }
 
+    /**
+     *
+     * @return bool|string
+     */
     protected function getTime()
     {
         if (false === $this->relativeTime) {
@@ -95,6 +122,13 @@ class FileLogger extends AbstractLogger
         return sprintf('%08.4f', (microtime(true) - $this->relativeTime));
     }
 
+    /**
+     * @param $level
+     * @param $message
+     * @param array $context
+     *
+     * @return $this
+     */
     protected function handleMessage($level, $message, $context = array())
     {
         if (count($context) > 0) {
