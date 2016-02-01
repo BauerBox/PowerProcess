@@ -3,11 +3,11 @@
 namespace BauerBox\PowerProcess\Exception;
 
 /**
- * Description of PowerProcessException
+ * Class ProcessForkException
  *
- * @author Don Bauer <don.bauer@gorevco.com>
+ * @package BauerBox\PowerProcess\Exception
  */
 class ProcessForkException extends \RuntimeException
 {
-    //put your code here
+    // Placeholder
 }

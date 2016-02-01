@@ -3,11 +3,11 @@
 namespace BauerBox\PowerProcess\Exception;
 
 /**
- * Description of PowerProcessException
+ * Class DaemonException
  *
- * @author Don Bauer <don.bauer@gorevco.com>
+ * @package BauerBox\PowerProcess\Exception
  */
 class DaemonException extends \RuntimeException
 {
-    //put your code here
+    // Placeholder
 }
