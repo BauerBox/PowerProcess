@@ -23,7 +23,7 @@ $cpu = $info->getCpuInfo();
 echo
     "CPU Count:     " . $cpu->count . PHP_EOL .
     "Cores Per CPU: " . $cpu->cores . PHP_EOL .
-    "L Cores Per:   " . $cpu->logicalCores . PHP_EOL . PHP_EOL
+    "Logical Cores: " . $cpu->logicalCores . PHP_EOL . PHP_EOL
 ;
 
 $mem = $info->getMemoryInfo();
