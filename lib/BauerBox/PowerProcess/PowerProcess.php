@@ -32,6 +32,7 @@ use Psr\Log\LoggerInterface;
  */
 class PowerProcess implements LoggerAwareInterface
 {
+    /* Version Constants */
     const VERSION         = '3.0.0-alpha1';
     const VERSION_ID      = '30000';
     const MAJOR_VERSION   = '3';
@@ -39,7 +40,7 @@ class PowerProcess implements LoggerAwareInterface
     const RELEASE_VERSION = '0';
     const EXTRA_VERSION   = 'alpha1';
 
-    // Callback constants (Can be bitwise combined)
+    /* Callback Constants (Bitwise-combination supported) */
     const CALLBACK_IGNORE           =   0;
     const CALLBACK_CONTINUE         =   1;
     const CALLBACK_SHUTDOWN         =   2;  // Request that the control process shutdown
@@ -78,7 +79,7 @@ class PowerProcess implements LoggerAwareInterface
     ];
 
     /**
-     * @var array
+     * @var array|callable[]
      */
     private $callbacks;
 
@@ -120,25 +121,6 @@ class PowerProcess implements LoggerAwareInterface
      * @var boolean
      */
     private $isWindows;
-
-    /**
-     * Shared Memory Support Flag
-     *
-     * @var boolean
-     */
-    private $hasSharedMemorySupport;
-
-    /**
-     * INI: sysvshm.init_mem
-     *
-     * @var mixed
-     */
-    private $sharedMemorySegmentSize;
-
-    /**
-     * @var mixed
-     */
-    private $sessionId;
 
     /**
      * Number of uSeconds to wait between ticks
@@ -246,7 +228,9 @@ class PowerProcess implements LoggerAwareInterface
     }
 
     /**
+     * Destructor
      *
+     * Runs final tick and cleans up memory before detaching logger
      */
     public function __destruct()
     {
@@ -300,7 +284,7 @@ class PowerProcess implements LoggerAwareInterface
         $this->processId = Identification::getProcessId();
 
         if ($this->parentSessionId > 0) {
-            $this->logger->debug(
+            $this->logger->info(
                 'Daemonization successful!'
             );
             $this->logger->debug(
@@ -609,12 +593,12 @@ class PowerProcess implements LoggerAwareInterface
 
         if (true === array_key_exists('_', $_SERVER)) {
             $command = $_SERVER['_'];
-            if (true === array_key_exists('argv', $_SERVER) && count($_SERVER['argv'] > 0)) {
+            if (true === array_key_exists('argv', $_SERVER) && count($_SERVER['argv']) > 0) {
                 if ($command === $_SERVER['argv'][0]) {
                     unset($_SERVER['argv'][0]);
                 }
             }
-        } elseif (true === array_key_exists('argv', $_SERVER) && count($_SERVER['argv'] > 0)) {
+        } elseif (true === array_key_exists('argv', $_SERVER) && count($_SERVER['argv']) > 0) {
             $command = $_SERVER['argv'][0];
         } else {
             $this->logger->debug('Restart not possible, resoring to shutdown instead');
@@ -1017,7 +1001,9 @@ class PowerProcess implements LoggerAwareInterface
     }
 
     /**
+     * The tick procedure
      *
+     * Handles sending queued signals and checks running jobs
      */
     protected function tick()
     {

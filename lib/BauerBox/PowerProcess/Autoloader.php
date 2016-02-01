@@ -1,9 +1,20 @@
 <?php
 
+/**
+ * Class BauerBox_PowerProcess_Autoloader
+ */
 class BauerBox_PowerProcess_Autoloader
 {
+    /**
+     * Base namespace
+     *
+     * @var string
+     */
     public static $classBase = 'BauerBox\\PowerProcess\\';
 
+    /**
+     * Register the Autoloader
+     */
     public static function register()
     {
         spl_autoload_register(array(new self, 'autoload'));
