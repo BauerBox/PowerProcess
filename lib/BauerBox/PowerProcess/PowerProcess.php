@@ -33,12 +33,12 @@ use Psr\Log\LoggerInterface;
 class PowerProcess implements LoggerAwareInterface
 {
     /* Version Constants */
-    const VERSION         = '3.0.0-alpha1';
+    const VERSION         = '3.0.0-alpha2';
     const VERSION_ID      = '30000';
     const MAJOR_VERSION   = '3';
     const MINOR_VERSION   = '0';
     const RELEASE_VERSION = '0';
-    const EXTRA_VERSION   = 'alpha1';
+    const EXTRA_VERSION   = 'alpha2';
 
     /* Callback Constants (Bitwise-combination supported) */
     const CALLBACK_IGNORE           =   0;
@@ -116,13 +116,6 @@ class PowerProcess implements LoggerAwareInterface
     private $ready = false;
 
     /**
-     * Windows Flag
-     *
-     * @var boolean
-     */
-    private $isWindows;
-
-    /**
      * Number of uSeconds to wait between ticks
      *
      * @var int
@@ -173,9 +166,12 @@ class PowerProcess implements LoggerAwareInterface
      */
     public function __construct($maxJobs = null, $maxJobTime = 300)
     {
-        // Set Windows Flag
-        // TODO: Remove Hard Code
-        $this->isWindows = false;
+        // Check for pcntl and posix extensions
+        if (false === extension_loaded('posix') || false === extension_loaded('pcntl')) {
+            throw new \Exception(
+                'PowerProcess requires the posix and pcntl extensions to operate'
+            );
+        }
 
         // Get the System Info
         $this->sysInfo = new SystemInfo();
@@ -190,19 +186,6 @@ class PowerProcess implements LoggerAwareInterface
 
             $cMax = $this->sysInfo->getCpuInfo()->logicalCores;
             $this->maxJobs = ($cMax < $mMax) ? $cMax : $mMax;
-        }
-
-        if (true === $this->isWindows) {
-            throw new \Exception(
-                'PowerProcess is currently not available on the Windows operating system'
-            );
-        } else {
-            // Check for pcntl and posix extensions
-            if (false === extension_loaded('posix') || false === extension_loaded('pcntl')) {
-                throw new \Exception(
-                    'PowerProcess requires the posix and pcntl extensions to operate'
-                );
-            }
         }
 
         // Check for OS X
