@@ -19,8 +19,8 @@ class MemoryInfo
     const BYTES = 0;
     const KB = 1;
     const MB = 2;
-    const GB = 4;
-    const TB = 8;
+    const GB = 3;
+    const TB = 4;
 
     /**
      * RAM in bytes
@@ -60,23 +60,7 @@ class MemoryInfo
             if (false === array_key_exists('unit', $match)) {
                 $this->phpMemoryLimit = (int) $match['mem'];
             } else {
-                $mem = (int) $match['mem'];
-
-                switch (strtolower($match['unit'])) {
-                    case 't':
-                        $mem *= 1024;
-                        // Fall through
-                    case 'g':
-                        $mem *= 1024;
-                        // Fall through
-                    case 'm':
-                        $mem *= 1024;
-                        // Fall through
-                    case 'k':
-                        $mem *= 1024;
-                }
-
-                $this->phpMemoryLimit = $mem;
+                $this->phpMemoryLimit = $this->getBytesFromMatch($match);
             }
         }
     }
@@ -101,24 +85,7 @@ class MemoryInfo
                 if (false === array_key_exists('unit', $match)) {
                     $this->memory = (int) $match['mem'];
                 } else {
-                    $mem = (int) $match['mem'];
-
-                    switch (strtolower($match['unit'])) {
-                        case 'tb':
-                            $mem *= 1024;
-                            // Fall through
-                        case 'gb':
-                            $mem *= 1024;
-                            // Fall through
-                        case 'mb':
-                            $mem *= 1024;
-                            // Fall through
-                        case 'kb':
-                            $mem *= 1024;
-                            break;
-                    }
-
-                    $this->memory = $mem;
+                    $this->memory = $this->getBytesFromMatch($match);
                 }
             }
         }
@@ -146,28 +113,56 @@ class MemoryInfo
 
     /**
      * @param $memory
-     * @param null $unit
+     * @param int $unit
      *
      * @return float|int
      */
-    private function bytesToUnit($memory, $unit = null)
+    private function bytesToUnit($memory, $unit)
     {
         switch ($unit) {
             case static::TB:
-                return ($memory / (1024 * 1024 * 1024 * 1024));
-                break;
             case static::GB:
-                return ($memory / (1024 * 1024 * 1024));
-                break;
             case static::MB:
-                return ($memory / (1024 * 1024));
-                break;
             case static::KB:
-                return ($memory / 1024);
-                break;
+                return ($memory / (pow(1024, $unit)));
             case static::BYTES:
-            default:
                 return $memory;
+            default:
+                throw new \LogicException(sprintf('Unsupported unit value "%d"', $unit));
         }
+    }
+
+    /**
+     * @param array $match
+     *
+     * @return int
+     */
+    private function getBytesFromMatch(array $match)
+    {
+        $mem = (int) $match['mem'];
+        $unit = static::BYTES;
+
+        switch (strtolower($match['unit'])) {
+            case 'tb':
+            case 't':
+                $unit = static::TB;
+                break;
+            case 'gb':
+            case 'g':
+                $unit = static::GB;
+                break;
+            case 'mb':
+            case 'm':
+                $unit = static::MB;
+                break;
+            case 'kb':
+            case 'k':
+                $unit = static::KB;
+                break;
+            default:
+                throw new \LogicException(sprintf('Unsupported unit string "%s"', $unit));
+        }
+
+        return ($unit === static::BYTES ? $mem : $mem * pow(1024, $unit));
     }
 }
