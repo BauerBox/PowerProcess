@@ -100,26 +100,10 @@ class SystemInfo
         $this->sniffPlatform();
 
         // Get CPU Info
-        $this->sniffCpu();
+        $this->cpu = new CpuInfo($this->getOs());
 
         // Get Memory Info
-        $this->sniffMemory();
-    }
-
-    /**
-     * Load Memory Information
-     */
-    protected function sniffMemory()
-    {
         $this->mem = new MemoryInfo($this->getOs());
-    }
-
-    /**
-     * Load CPU Info
-     */
-    protected function sniffCpu()
-    {
-        $this->cpu = new CpuInfo($this->getOs());
     }
 
     /**
@@ -128,13 +112,13 @@ class SystemInfo
     protected function sniffPlatform()
     {
         // Set the basic platform information
-        $this->platform = array(
+        $this->platform = [
             static::INFO_OS           =>  php_uname('s'),
             static::INFO_HOSTNAME     =>  php_uname('n'),
             static::INFO_OS_RELEASE   =>  php_uname('r'),
             static::INFO_OS_VERSION   =>  php_uname('v'),
             static::INFO_OS_ARCH      =>  php_uname('m')
-        );
+        ];
     }
 
     /**

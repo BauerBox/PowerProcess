@@ -92,21 +92,21 @@ class MemoryInfo
     }
 
     /**
-     * @param null $unit
+     * @param int $unit
      *
      * @return float|int
      */
-    public function getMemory($unit = null)
+    public function getMemory($unit = self::BYTES)
     {
         return $this->bytesToUnit($this->memory, $unit);
     }
 
     /**
-     * @param null $unit
+     * @param int $unit
      *
      * @return float|int
      */
-    public function getPhpMemoryLimit($unit = null)
+    public function getPhpMemoryLimit($unit = self::BYTES)
     {
         return $this->bytesToUnit($this->phpMemoryLimit, $unit);
     }
