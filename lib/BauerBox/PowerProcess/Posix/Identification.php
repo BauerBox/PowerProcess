@@ -25,7 +25,7 @@ class Identification
      */
     public static function getProcessId()
     {
-        return posix_getpid();
+        return \posix_getpid();
     }
 
     /**
@@ -35,7 +35,7 @@ class Identification
      */
     public static function getParentProcessId()
     {
-        return posix_getppid();
+        return \posix_getppid();
     }
 
     /**
@@ -45,7 +45,7 @@ class Identification
      */
     public static function getSessionId()
     {
-        return posix_getsid(0);
+        return \posix_getsid(0);
     }
 
     /**
@@ -57,7 +57,7 @@ class Identification
      */
     public static function getSessionIdForProcessId($processId)
     {
-        return posix_getsid($processId);
+        return \posix_getsid($processId);
     }
 
     /**
@@ -67,7 +67,7 @@ class Identification
      */
     public static function getGroupId()
     {
-        return posix_getgid();
+        return \posix_getgid();
     }
 
     /**
@@ -77,7 +77,7 @@ class Identification
      */
     public static function getEffectiveGroupId()
     {
-        return posix_getegid();
+        return \posix_getegid();
     }
 
     /**
@@ -87,7 +87,7 @@ class Identification
      */
     public static function getUserId()
     {
-        return posix_getuid();
+        return \posix_getuid();
     }
 
     /**
@@ -97,7 +97,7 @@ class Identification
      */
     public static function getEffectiveUserId()
     {
-        return posix_geteuid();
+        return \posix_geteuid();
     }
 
     /**
@@ -107,7 +107,7 @@ class Identification
      */
     public static function getGroupSetIds()
     {
-        return posix_getgroups();
+        return \posix_getgroups();
     }
 
     /**
@@ -131,6 +131,6 @@ class Identification
      */
     public static function getGroupInfoForGroupId($groupId)
     {
-        return posix_getgrgid($groupId);
+        return \posix_getgrgid($groupId);
     }
 }
