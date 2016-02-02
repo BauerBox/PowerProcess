@@ -1,10 +1,11 @@
 <?php
 /**
- * Created by JetBrains PhpStorm.
- * User: bauerd
- * Date: 4/5/13
- * Time: 5:21 PM
- * To change this template use File | Settings | File Templates.
+ * This file is a part of the PowerProcess package for PHP by BauerBox Labs
+ *
+ * @copyright
+ * Copyright (c) 2013-2016 Don Bauer <lordgnu@me.com> BauerBox Labs
+ *
+ * @license https://github.com/BauerBox/PowerProcess/blob/master/LICENSE MIT License
  */
 
 namespace BauerBox\PowerProcess\Util;
